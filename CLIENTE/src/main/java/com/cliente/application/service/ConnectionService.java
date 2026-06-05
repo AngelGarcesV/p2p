@@ -79,6 +79,41 @@ public class ConnectionService {
         return ServerJsonUtil.fromJson(respJson, Respuesta.class);
     }
 
+    /**
+     * Igual que {@link #send(Mensaje)} pero con timeout de lectura personalizado.
+     * Solo aplica a conexiones TCP; para UDP se usa el timeout estándar.
+     */
+    public synchronized Respuesta<?> send(Mensaje<?> mensaje, int timeoutMs) throws Exception {
+        if (!connected || socketClient == null)
+            throw new IllegalStateException("No hay conexión activa con el servidor.");
+        if (clientId != null && mensaje.getMetadata() != null)
+            mensaje.getMetadata().setClientId(clientId);
+        String json = ServerJsonUtil.toJson(mensaje);
+        String respJson;
+        if (socketClient instanceof TcpSocketClient tcpClient) {
+            respJson = tcpClient.sendAndReceive(json, timeoutMs);
+        } else {
+            respJson = socketClient.sendAndReceive(json);
+        }
+        return ServerJsonUtil.fromJson(respJson, Respuesta.class);
+    }
+
+    /**
+     * Envía un mensaje SIEMPRE por TCP con timeout personalizado,
+     * independientemente del protocolo actual del cliente.
+     * Usar para operaciones que requieren TCP obligatorio (ej: CLASIFICAR_GENERO).
+     */
+    public synchronized Respuesta<?> sendViaTcp(Mensaje<?> mensaje, int timeoutMs) throws Exception {
+        if (!connected) throw new IllegalStateException("No hay conexión activa con el servidor.");
+        if (clientId != null && mensaje.getMetadata() != null)
+            mensaje.getMetadata().setClientId(clientId);
+        String json = ServerJsonUtil.toJson(mensaje);
+        TcpSocketClient tcpClient = new TcpSocketClient();
+        tcpClient.connect(host, port);
+        String respJson = tcpClient.sendAndReceive(json, timeoutMs);
+        return ServerJsonUtil.fromJson(respJson, Respuesta.class);
+    }
+
     public void disconnect() {
         if (connected && socketClient != null) {
             try {

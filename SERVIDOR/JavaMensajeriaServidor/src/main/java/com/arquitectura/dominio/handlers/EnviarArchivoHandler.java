@@ -110,13 +110,32 @@ public class EnviarArchivoHandler implements Handler<PayloadEnviarArchivo> {
                             new ReplicadorArchivos().replicar(modelo, gestorPeers.getServidorId()));
                     LOGGER.info(() -> "Archivo broadcast replicado a peers | " + nombreFinalArchivo);
                 } else {
+                    // Unicast local: replicar también a todos los peers para distribución
+                    PayloadReplicarArchivo replicaLocalPayload = new PayloadReplicarArchivo();
+                    replicaLocalPayload.setId(mensajeId);
+                    replicaLocalPayload.setRemitente(remitente);
+                    replicaLocalPayload.setNombreArchivo(extraerNombreBase(nombreFinalArchivo));
+                    replicaLocalPayload.setExtension(extraerExtension(nombreFinalArchivo));
+                    replicaLocalPayload.setTamano(payload.getTamano());
+                    replicaLocalPayload.setHashSha256(hashSha256);
+                    replicaLocalPayload.setContenidoCifrado(contenidoCifrado);
+                    replicaLocalPayload.setServidorOrigen(gestorPeers.getServidorId());
+                    replicaLocalPayload.setClientIdDestino(clientIdDestino);
+
+                    Mensaje<PayloadReplicarArchivo> mensajeReplicaLocal = new Mensaje<>();
+                    mensajeReplicaLocal.setTipo(TipoMensaje.REQUEST);
+                    mensajeReplicaLocal.setAccion(Accion.REPLICAR_ARCHIVO);
+                    mensajeReplicaLocal.setMetadata(crearMetadataRespuesta());
+                    mensajeReplicaLocal.setPayload(replicaLocalPayload);
+
+                    gestorPeers.enviarATodos(mensajeReplicaLocal);
                     LOGGER.info(() -> "Archivo unicast para [" + clientIdDestino
-                            + "] guardado localmente | " + nombreFinalArchivo);
+                            + "] replicado a todos los peers | " + nombreFinalArchivo);
                 }
             } else {
-                // Unicast para cliente en otro servidor: hacer forwarding S2S sin persistir aquí
-                // El archivo físico ya está en disco (necesario para leerlo), pero NO se registra en DB
-                // para no contaminar el historial local con archivos que no nos corresponden.
+                // Unicast para cliente en otro servidor: distribuir a TODOS los peers
+                // (no solo al peer dueño) para garantizar entrega sin importar
+                // a qué servidor esté conectado el destinatario.
                 final String peerFinal = peerDestinoId;
                 PayloadReplicarArchivo replicarPayload = new PayloadReplicarArchivo();
                 replicarPayload.setId(mensajeId);
@@ -135,34 +154,16 @@ public class EnviarArchivoHandler implements Handler<PayloadEnviarArchivo> {
                 mensajePeer.setMetadata(crearMetadataRespuesta());
                 mensajePeer.setPayload(replicarPayload);
 
-                boolean ok = gestorPeers.enviarAPeer(peerFinal, mensajePeer);
-                if (ok) {
-                    LOGGER.info(() -> "Archivo unicast forwarded al peer " + peerFinal
-                            + " para entrega a [" + clientIdDestino + "] | " + nombreFinalArchivo);
-                    // Limpiar el archivo temporal del disco de este servidor (ya fue enviado al peer correcto)
-                    try {
-                        Files.deleteIfExists(rutaArchivo);
-                        LOGGER.fine(() -> "Archivo temporal eliminado tras forwarding: " + rutaArchivo);
-                    } catch (IOException ex) {
-                        LOGGER.warning(() -> "No se pudo eliminar archivo temporal tras forwarding: " + rutaArchivo);
-                    }
-                } else {
-                    // Forwarding falló: guardar localmente como fallback
-                    LOGGER.warning(() -> "Forwarding al peer " + peerFinal + " falló — guardando localmente como fallback");
-                    archivoRecibidoRepository.guardar(
-                            mensajeId,
-                            remitente,
-                            ipRemitente,
-                            extraerNombreBase(nombreFinalArchivo),
-                            extraerExtension(nombreFinalArchivo),
-                            rutaArchivo.toAbsolutePath().toString(),
-                            hashSha256,
-                            contenidoCifrado,
-                            payload.getTamano(),
-                            fechaRecepcion,
-                            null,
-                            clientIdDestino
-                    );
+                gestorPeers.enviarATodos(mensajePeer);
+                LOGGER.info(() -> "Archivo unicast para [" + clientIdDestino
+                        + "] distribuido a todos los peers | " + nombreFinalArchivo
+                        + " (peer dueño: " + peerFinal + ")");
+                // Limpiar el archivo temporal del disco de este servidor tras distribución
+                try {
+                    Files.deleteIfExists(rutaArchivo);
+                    LOGGER.fine(() -> "Archivo temporal eliminado tras distribución: " + rutaArchivo);
+                } catch (IOException ex) {
+                    LOGGER.warning(() -> "No se pudo eliminar archivo temporal: " + rutaArchivo);
                 }
             }
 

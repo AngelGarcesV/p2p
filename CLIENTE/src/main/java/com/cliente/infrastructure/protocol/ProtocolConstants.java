@@ -25,6 +25,9 @@ public final class ProtocolConstants {
     public static final int CONNECT_TIMEOUT = 5_000;   // ms
     public static final int READ_TIMEOUT    = 30_000;  // ms — aumentado para streaming
 
+    /** Timeout extendido para operaciones ML (inferencia puede tardar hasta 120s). */
+    public static final int ML_READ_TIMEOUT = 120_000; // ms
+
     /** Tiempo máximo de espera por ACK de un chunk UDP antes de reintentar. */
     public static final int UDP_ACK_TIMEOUT = 5_000;   // ms
 

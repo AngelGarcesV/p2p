@@ -1,6 +1,14 @@
 package com.cliente.presentation.controller;
 
-import com.cliente.infrastructure.http.MusicGenreService;
+import com.arquitectura.mensajeria.Mensaje;
+import com.arquitectura.mensajeria.Respuesta;
+import com.arquitectura.mensajeria.enums.Accion;
+import com.arquitectura.mensajeria.enums.Estado;
+import com.arquitectura.mensajeria.enums.Protocolo;
+import com.arquitectura.mensajeria.payload.PayloadClasificarGenero;
+import com.cliente.application.service.ConnectionService;
+import com.cliente.infrastructure.protocol.ProtocolConstants;
+import com.cliente.infrastructure.protocol.ServerJsonUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -20,7 +28,9 @@ import javafx.util.Duration;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -147,6 +157,12 @@ public class GenreClassifierController {
     private void handlePredict() {
         if (selectedFile == null) return;
 
+        ConnectionService cs = ConnectionService.getInstance();
+        if (!cs.isConnected()) {
+            showError("❌ No hay conexión con el servidor. Conectate primero.");
+            return;
+        }
+
         predictButton.setDisable(true);
         show(predictProgress);
         show(predictStatusLabel);
@@ -158,7 +174,33 @@ public class GenreClassifierController {
         Task<String> task = new Task<>() {
             @Override
             protected String call() throws Exception {
-                return MusicGenreService.getInstance().predictGenre(target);
+                // 1. Leer bytes del WAV y codificar en Base64
+                byte[] wavBytes = Files.readAllBytes(target.toPath());
+                String contenidoBase64 = Base64.getEncoder().encodeToString(wavBytes);
+
+                // 2. Construir mensaje TCP
+                PayloadClasificarGenero payload = new PayloadClasificarGenero(
+                        contenidoBase64, target.getName());
+
+                // CLASIFICAR_GENERO siempre viaja por TCP — WAV base64 no cabe en UDP (65KB)
+                Mensaje<PayloadClasificarGenero> mensaje = ServerJsonUtil.buildRequest(
+                        Accion.CLASIFICAR_GENERO, payload, cs.getClientId(), Protocolo.TCP);
+
+                // 3. Enviar SIEMPRE por TCP con timeout 120s
+                Respuesta<?> respuesta = cs.sendViaTcp(mensaje, ProtocolConstants.ML_READ_TIMEOUT);
+
+                // 4. Procesar respuesta
+                if (respuesta.getEstado() == Estado.ERROR) {
+                    String codigo = respuesta.getError() != null ? respuesta.getError().getCodigo() : "ERROR";
+                    String detalle = respuesta.getError() != null ? respuesta.getError().getMensaje() : "Error desconocido";
+                    throw new Exception("[" + codigo + "] " + detalle);
+                }
+
+                // El payload de la respuesta es el JSON de predicción de Python
+                if (respuesta.getMensaje() == null || respuesta.getMensaje().getPayload() == null) {
+                    throw new Exception("Respuesta vacía del servidor.");
+                }
+                return String.valueOf(respuesta.getMensaje().getPayload());
             }
         };
 
@@ -336,3 +378,4 @@ public class GenreClassifierController {
         return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
     }
 }
+

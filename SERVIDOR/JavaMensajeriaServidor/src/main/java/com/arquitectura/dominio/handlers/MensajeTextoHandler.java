@@ -15,8 +15,6 @@ import com.arquitectura.mensajeria.Respuesta;
 import com.arquitectura.mensajeria.enums.Accion;
 import com.arquitectura.mensajeria.enums.Estado;
 import com.arquitectura.mensajeria.enums.TipoMensaje;
-import com.arquitectura.mensajeria.payload.PayloadClienteRemoto;
-import com.arquitectura.mensajeria.payload.PayloadEntregarMensaje;
 import com.arquitectura.mensajeria.payload.PayloadEnviarMensaje;
 import com.arquitectura.mensajeria.payload.PayloadReplicarMensaje;
 
@@ -114,51 +112,20 @@ public class MensajeTextoHandler implements Handler<PayloadEnviarMensaje> {
             peers.enviarATodos(msgReplica);
             LOGGER.fine(() -> "Broadcast disparado para: " + mensajeId);
         } else {
-            // Unicast
-            LOGGER.fine(() -> "Unicast de '" + autor + "' para destinatario: '" + destinatario + "'");
-            if (gestorSesiones.existeSesionActiva(destinatario)) {
-                LOGGER.fine(() -> "Destinatario '" + destinatario + "' es LOCAL — quedara en DB para poll");
-            } else {
-                List<PayloadClienteRemoto> remotos = peers.obtenerTodosClientesRemotos();
-                LOGGER.fine(() -> "Cache de clientes remotos: " + remotos.size()
-                        + " | " + remotos.stream()
-                            .map(r -> r.getUsername() + "@" + r.getServidorOrigen())
-                            .collect(java.util.stream.Collectors.joining(", ")));
+            // Unicast — replicar a TODOS los servidores para que el destinatario
+            // pueda recibir el mensaje sin importar a qué servidor esté conectado.
+            LOGGER.fine(() -> "Unicast de '" + autor + "' para destinatario: '" + destinatario + "' — replicando a todos los peers");
+            PayloadReplicarMensaje replicaUnicastPayload = new PayloadReplicarMensaje();
+            replicaUnicastPayload.setId(mensajeId);
+            replicaUnicastPayload.setAutor(autor);
+            replicaUnicastPayload.setContenido(contenido);
+            replicaUnicastPayload.setServidorOrigen(peers.getServidorId());
+            replicaUnicastPayload.setDestinatario(destinatario);
+            replicaUnicastPayload.setTimestamp(timestamp);
 
-                String peerOwner = null;
-                for (PayloadClienteRemoto remoto : remotos) {
-                    if (destinatario.equals(remoto.getUsername())) {
-                        peerOwner = remoto.getServidorOrigen();
-                        break;
-                    }
-                }
-
-                if (peerOwner != null) {
-                    final String peerOwnerFinal = peerOwner;
-                    LOGGER.fine(() -> "Destinatario '" + destinatario + "' encontrado en peer: " + peerOwnerFinal);
-                    PayloadEntregarMensaje entregarPayload = new PayloadEntregarMensaje();
-                    entregarPayload.setDestinatario(destinatario);
-                    entregarPayload.setAutor(autor);
-                    entregarPayload.setContenido(contenido);
-                    entregarPayload.setServidorOrigen(peers.getServidorId());
-                    entregarPayload.setTimestamp(timestamp);
-
-                    Mensaje<PayloadEntregarMensaje> msgEntregar = buildS2SMensaje(Accion.ENTREGAR_MENSAJE, entregarPayload);
-                    boolean ok = peers.enviarAPeer(peerOwnerFinal, msgEntregar);
-                    LOGGER.fine(() -> "enviarAPeer(" + peerOwnerFinal + ") resultado: " + (ok ? "OK" : "FALLO"));
-                    if (!ok) {
-                        LOGGER.warning("Envio directo fallido a " + peerOwnerFinal + ", intentando via otros peers");
-                        for (com.arquitectura.aplicacion.sesion.ConexionPeer peer : peers.obtenerPeersConectados()) {
-                            if (!peer.getConfig().getServidorId().equals(peerOwnerFinal)) {
-                                boolean okFallback = peers.enviarAPeer(peer.getConfig().getServidorId(), msgEntregar);
-                                LOGGER.fine(() -> "Fallback via " + peer.getConfig().getServidorId() + ": " + (okFallback ? "OK" : "FALLO"));
-                            }
-                        }
-                    }
-                } else {
-                    LOGGER.warning("Destinatario '" + destinatario + "' NO encontrado ni local ni en cache remoto");
-                }
-            }
+            Mensaje<PayloadReplicarMensaje> msgReplicaUnicast = buildS2SMensaje(Accion.REPLICAR_MENSAJE, replicaUnicastPayload);
+            peers.enviarATodos(msgReplicaUnicast);
+            LOGGER.fine(() -> "Unicast replicado a todos los peers: " + mensajeId);
         }
     }
 

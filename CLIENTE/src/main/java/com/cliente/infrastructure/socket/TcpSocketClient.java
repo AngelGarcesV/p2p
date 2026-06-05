@@ -23,9 +23,20 @@ public class TcpSocketClient implements SocketClient {
 
     @Override
     public String sendAndReceive(String json) throws Exception {
+        return sendAndReceive(json, ProtocolConstants.READ_TIMEOUT);
+    }
+
+    /**
+     * Envía {@code json} al servidor y espera la respuesta usando un timeout de lectura
+     * personalizado. Útil para operaciones de larga duración como inferencia ML.
+     *
+     * @param json      JSON a enviar
+     * @param timeoutMs timeout de lectura del socket en milisegundos
+     */
+    public String sendAndReceive(String json, int timeoutMs) throws Exception {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), ProtocolConstants.CONNECT_TIMEOUT);
-            socket.setSoTimeout(ProtocolConstants.READ_TIMEOUT);
+            socket.setSoTimeout(timeoutMs);
 
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));

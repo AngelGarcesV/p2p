@@ -26,5 +26,8 @@ public enum Accion {
     ENTREGAR_MENSAJE,
     LISTAR_LOGS_REMOTO,
     ESTADO_SERVIDOR,
-    SINCRONIZAR_ESTADO      // S2S — sincronizacion completa al reconectarse un peer
+    SINCRONIZAR_ESTADO,     // S2S — sincronizacion completa al reconectarse un peer
+
+    // ML — clasificacion de genero musical via proxy al servicio Python
+    CLASIFICAR_GENERO
 }

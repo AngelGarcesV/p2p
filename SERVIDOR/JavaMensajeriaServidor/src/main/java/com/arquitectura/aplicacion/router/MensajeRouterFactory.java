@@ -1,6 +1,7 @@
 package com.arquitectura.aplicacion.router;
 
 import com.arquitectura.dominio.handlers.ConectarHandler;
+import com.arquitectura.dominio.handlers.ClasificarGeneroHandler;
 import com.arquitectura.dominio.handlers.DesconectarHandler;
 import com.arquitectura.dominio.handlers.DesconectarServidorHandler;
 import com.arquitectura.dominio.handlers.EntregarMensajeHandler;
@@ -53,6 +54,9 @@ public class MensajeRouterFactory {
         router.registrarHandler(Accion.ESTADO_SERVIDOR,          new EstadoServidorHandler());
         router.registrarHandler(Accion.LISTAR_LOGS_REMOTO,       new ListarLogsRemotoHandler());
         router.registrarHandler(Accion.SINCRONIZAR_ESTADO,       new SincronizarEstadoHandler());
+
+        // ML — clasificacion de genero musical
+        router.registrarHandler(Accion.CLASIFICAR_GENERO,        new ClasificarGeneroHandler());
 
         return router;
     }

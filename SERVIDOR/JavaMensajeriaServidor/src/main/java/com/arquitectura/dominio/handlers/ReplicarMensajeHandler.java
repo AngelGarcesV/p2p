@@ -49,7 +49,7 @@ public class ReplicarMensajeHandler implements Handler<PayloadReplicarMensaje> {
                 "",   // contenido cifrado no reenviado en replicacion de texto
                 timestamp,
                 servidorOrigen,
-                null  // broadcast replicado — sin destinatario especifico
+                payload.getDestinatario()  // null = broadcast, username = unicast
         );
 
         LOGGER.info(() -> "Mensaje replicado persistido: id=" + payload.getId()

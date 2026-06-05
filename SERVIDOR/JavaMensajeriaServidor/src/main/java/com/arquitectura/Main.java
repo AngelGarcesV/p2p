@@ -3,6 +3,7 @@ package com.arquitectura;
 import com.arquitectura.aplicacion.ProcesadorMensajes;
 import com.arquitectura.aplicacion.RespuestaSender;
 import com.arquitectura.aplicacion.concurrencia.AtencionClienteTask;
+import com.arquitectura.aplicacion.ml.MlProxyConfig;
 import com.arquitectura.aplicacion.router.MensajeRouter;
 import com.arquitectura.aplicacion.router.MensajeRouterFactory;
 import com.arquitectura.aplicacion.sesion.GestorServidoresPeer;
@@ -17,6 +18,8 @@ import com.arquitectura.infraestructura.persistencia.ConexionMySql;
 import com.arquitectura.infraestructura.seguridad.CryptoConfig;
 import com.arquitectura.infraestructura.transporte.ProtocoloTransporte;
 import com.arquitectura.infraestructura.transporte.ProtocoloTransporteFactory;
+import com.arquitectura.rest.ServidorRestApp;
+import org.springframework.boot.SpringApplication;
 
 import java.io.InputStream;
 import java.time.Duration;
@@ -47,12 +50,13 @@ public class Main {
             properties.load(inputStream);
 
             String protocolo = properties.getProperty("transfer-protocol");
-            int puerto = Integer.parseInt(properties.getProperty("server.port"));
+            int puerto = Integer.parseInt(properties.getProperty("tcp.port"));
             int maxClientes = Integer.parseInt(properties.getProperty("max-clients", "10"));
             long sessionTimeoutMinutos = Long.parseLong(properties.getProperty("session.timeout.minutes", "30"));
 
             CryptoConfig.configurar(properties);
             ConexionMySql.configurar(properties);
+            MlProxyConfig.configurar(properties);
             LogConfig.configureDatabaseLogging();
 
             // ---- Peer-to-peer federation bootstrap ----
@@ -111,6 +115,15 @@ public class Main {
             RespuestaSender sender = new RespuestaSender();
             ProcesadorMensajes procesador = new ProcesadorMensajes(router);
             GestorSesiones.getInstance().configurar(maxClientes, Duration.ofMinutes(sessionTimeoutMinutos));
+
+            Thread springThread = new Thread(() -> {
+                SpringApplication app = new SpringApplication(ServidorRestApp.class);
+                app.run();
+            });
+            springThread.setDaemon(true);
+            springThread.setName("spring-rest-server");
+            springThread.start();
+            Thread.sleep(2000);
 
             ExecutorService ejecutorClientes = Executors.newFixedThreadPool(maxClientes);
             ObjectPool<AtencionClienteTask> poolTareas = new ObjectPool<>(maxClientes, AtencionClienteTask::new);
