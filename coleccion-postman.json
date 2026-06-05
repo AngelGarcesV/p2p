@@ -6,7 +6,8 @@
   },
   "variable": [
     { "key": "rest_base", "value": "http://localhost:9090", "type": "string" },
-    { "key": "ml_base",   "value": "http://localhost:8000", "type": "string" }
+    { "key": "ml_base",   "value": "http://localhost:8000", "type": "string" },
+    { "key": "username",  "value": "usuario-demo",          "type": "string" }
   ],
   "item": [
     {
@@ -100,6 +101,57 @@
       ]
     },
     {
+      "name": "Spring REST - Servidores",
+      "item": [
+        {
+          "name": "Listar servidores disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/servidores",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "servidores"]
+            },
+            "description": "Devuelve servidores peer conocidos y su estado de conexion."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Spring REST - Mensajes",
+      "item": [
+        {
+          "name": "Listar mensajes disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/mensajes",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "mensajes"]
+            },
+            "description": "Devuelve todos los mensajes disponibles registrados por el servidor."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar mensajes disponibles para usuario",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/mensajes?username={{username}}",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "mensajes"],
+              "query": [
+                { "key": "username", "value": "{{username}}" }
+              ]
+            },
+            "description": "Filtra mensajes broadcast o destinados al usuario indicado."
+          },
+          "response": []
+        }
+      ]
+    },    {
       "name": "Python FastAPI — ML Géneros",
       "item": [
         {

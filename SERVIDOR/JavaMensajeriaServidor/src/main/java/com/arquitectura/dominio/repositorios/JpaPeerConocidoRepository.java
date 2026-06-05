@@ -11,14 +11,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class JpaPeerConocidoRepository {
+public class JpaPeerConocidoRepository implements PeerConocidoRepository {
 
     private static final Logger LOGGER = Logger.getLogger(JpaPeerConocidoRepository.class.getName());
 
     /**
      * Guarda o actualiza un peer conocido (upsert por servidorId).
-     * Actualiza host, puerto y ultima_conexion si ya existía.
+     * Actualiza host, puerto y ultima_conexion si ya existÃ­a.
      */
+    @Override
     public void guardarOActualizar(String servidorId, String host, int puerto) {
         EntityManager em = HibernateManager.crearEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -44,6 +45,7 @@ public class JpaPeerConocidoRepository {
     }
 
     /** Devuelve todos los peers conocidos almacenados en DB. */
+    @Override
     public List<PeerConocidoModel> listarTodos() {
         EntityManager em = HibernateManager.crearEntityManager();
         try {
@@ -57,3 +59,4 @@ public class JpaPeerConocidoRepository {
         }
     }
 }
+
