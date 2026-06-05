@@ -35,6 +35,12 @@
                 <Button fx:id="btnServidores" text="⊕   Servidores"
                         onAction="#showServidores" maxWidth="Infinity"
                         styleClass="nav-item" alignment="CENTER_LEFT"/>
+                <Button fx:id="btnSettings"  text="⚙   Configuración"
+                        onAction="#showSettings"  maxWidth="Infinity"
+                        styleClass="nav-item" alignment="CENTER_LEFT"/>
+                <Button fx:id="btnGenreClassifier" text="🎵   Géneros Musicales"
+                        onAction="#showGenreClassifier" maxWidth="Infinity"
+                        styleClass="nav-item" alignment="CENTER_LEFT"/>
             </VBox>
 
             <!-- Spacer -->

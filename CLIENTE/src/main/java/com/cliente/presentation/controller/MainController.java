@@ -25,6 +25,8 @@ public class MainController {
     @FXML private Button btnMessages;
     @FXML private Button btnLogs;
     @FXML private Button btnServidores;
+    @FXML private Button btnSettings;
+    @FXML private Button btnGenreClassifier;
 
     private Button activeNavButton;
 
@@ -62,6 +64,16 @@ public class MainController {
     @FXML public void showServidores() {
         activateNav(btnServidores);
         loadView("fxml/servidores.fxml");
+    }
+
+    @FXML public void showSettings() {
+        activateNav(btnSettings);
+        loadView("fxml/settings.fxml");
+    }
+
+    @FXML public void showGenreClassifier() {
+        activateNav(btnGenreClassifier);
+        loadView("fxml/genre-classifier.fxml");
     }
 
     @FXML public void showUpload() {

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.cliente.presentation.controller.SettingsController"
+      styleClass="view-root" spacing="24">
+    <padding><Insets top="32" right="32" bottom="32" left="32"/></padding>
+
+    <!-- Header -->
+    <VBox spacing="4">
+        <Label text="Configuración" styleClass="view-title"/>
+        <Label text="Ajuste los parámetros del servicio de inteligencia artificial."
+               styleClass="view-subtitle"/>
+    </VBox>
+
+    <!-- ML API Card -->
+    <VBox styleClass="info-card" spacing="16" maxWidth="560">
+
+        <Label text="🎵  Servicio de Géneros Musicales (IA)" styleClass="info-card-status"/>
+        <Label text="Configure la dirección del servicio Python (FastAPI) que clasifica géneros musicales desde archivos WAV."
+               styleClass="view-subtitle" wrapText="true"/>
+
+        <!-- Host -->
+        <VBox spacing="6">
+            <Label text="IP / Host del servicio" styleClass="field-label"/>
+            <TextField fx:id="mlHostField"
+                       promptText="Ej: 192.168.1.50  o  localhost"
+                       styleClass="field-input"/>
+        </VBox>
+
+        <!-- Port -->
+        <VBox spacing="6">
+            <Label text="Puerto" styleClass="field-label"/>
+            <TextField fx:id="mlPortField"
+                       promptText="Ej: 8000"
+                       styleClass="field-input"/>
+        </VBox>
+
+        <!-- Status message -->
+        <Label fx:id="statusLabel" wrapText="true" managed="true" visible="false" maxWidth="Infinity"/>
+
+        <!-- Buttons -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <ProgressIndicator fx:id="progressIndicator"
+                               prefHeight="24" prefWidth="24"
+                               visible="false" managed="false"/>
+            <Button fx:id="testButton"
+                    text="🔌  Probar conexión"
+                    onAction="#handleTestConnection"
+                    styleClass="btn-secondary"/>
+            <Button fx:id="saveButton"
+                    text="Guardar"
+                    onAction="#handleSave"
+                    styleClass="btn-primary"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

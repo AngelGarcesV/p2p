@@ -4,6 +4,8 @@ module com.cliente {
     requires com.google.gson;
     requires java.base;
     requires java.sql;
+    requires java.desktop;
+    requires javafx.media;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.arquitectura.mensajeria;
@@ -18,6 +20,7 @@ module com.cliente {
     exports com.cliente.infrastructure.socket;
     exports com.cliente.infrastructure.protocol;
     exports com.cliente.infrastructure.persistence;
+    exports com.cliente.infrastructure.http;
     exports com.cliente.application.service;
     exports com.cliente.presentation.controller;
 }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.cliente.presentation.controller.GenreClassifierController"
+            fitToWidth="true" hbarPolicy="NEVER"
+            styleClass="view-root" style="-fx-background-color: #f0f2f5; -fx-background: #f0f2f5;">
+
+    <VBox spacing="24">
+        <padding><Insets top="32" right="32" bottom="32" left="32"/></padding>
+
+        <!-- Header -->
+        <VBox spacing="4">
+            <Label text="🎵  Clasificación de Géneros Musicales" styleClass="view-title"/>
+            <Label text="Seleccione un archivo WAV (máximo 30 segundos) para reproducirlo y predecir su género musical."
+                   styleClass="view-subtitle" wrapText="true"/>
+        </VBox>
+
+        <!-- File selection zone -->
+        <VBox fx:id="dropZone" styleClass="drop-zone" alignment="CENTER" spacing="12" prefHeight="130">
+            <Label text="Seleccione un archivo WAV" styleClass="drop-zone-label"/>
+            <Button text="Seleccionar Archivo" onAction="#handleSelectFile" styleClass="btn-secondary"/>
+        </VBox>
+
+        <!-- File info bar (hidden until file loaded) -->
+        <HBox fx:id="fileInfoBox" styleClass="info-card" spacing="12" alignment="CENTER_LEFT"
+              visible="false" managed="false">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+            <Label text="📄" style="-fx-font-size: 20px;"/>
+            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <Label fx:id="fileNameLabel" styleClass="info-value" wrapText="true"/>
+                <Label fx:id="fileDurationLabel" styleClass="status-label"/>
+            </VBox>
+        </HBox>
+
+        <!-- Error label -->
+        <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"
+               visible="false" managed="false"/>
+
+        <!-- Player controls (hidden until file loaded) -->
+        <VBox fx:id="playerBox" styleClass="info-card" spacing="14"
+              visible="false" managed="false">
+            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+            <Label text="REPRODUCCIÓN" styleClass="section-label"/>
+
+            <!-- Position slider -->
+            <Slider fx:id="positionSlider" min="0" max="1" value="0" blockIncrement="0.01"/>
+
+            <!-- Time labels -->
+            <HBox>
+                <Label fx:id="currentTimeLabel" text="0:00" styleClass="status-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="totalTimeLabel"   text="0:00" styleClass="status-label"/>
+            </HBox>
+
+            <!-- Buttons -->
+            <HBox spacing="10" alignment="CENTER">
+                <Button fx:id="playPauseButton" text="▶  Reproducir"
+                        onAction="#handlePlayPause" styleClass="btn-primary"/>
+                <Button text="■  Detener"
+                        onAction="#handleStop" styleClass="btn-secondary"/>
+            </HBox>
+        </VBox>
+
+        <!-- Predict button row -->
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="predictButton" text="🔍  Predecir Género"
+                    onAction="#handlePredict" styleClass="btn-primary"
+                    disable="true"/>
+            <ProgressIndicator fx:id="predictProgress"
+                               prefHeight="24" prefWidth="24"
+                               visible="false" managed="false"/>
+            <Label fx:id="predictStatusLabel" styleClass="status-label"
+                   visible="false" managed="false"/>
+        </HBox>
+
+        <!-- Results (hidden until prediction done) -->
+        <VBox fx:id="resultsBox" spacing="16" visible="false" managed="false">
+
+            <!-- Predicted genre card -->
+            <VBox styleClass="info-card" spacing="10">
+                <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+                <Label text="GÉNERO PREDICHO" styleClass="section-label"/>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <Label fx:id="predictedGenreLabel" styleClass="genre-result-label"/>
+                    <Label fx:id="confidenceLabel"     styleClass="info-card-status"/>
+                </HBox>
+            </VBox>
+
+            <!-- Probabilities card -->
+            <VBox styleClass="info-card" spacing="12">
+                <padding><Insets top="16" right="20" bottom="20" left="20"/></padding>
+                <Label text="PROBABILIDADES POR GÉNERO" styleClass="section-label"/>
+                <VBox fx:id="probabilitiesContainer" spacing="10"/>
+            </VBox>
+
+        </VBox>
+
+    </VBox>
+</ScrollPane>

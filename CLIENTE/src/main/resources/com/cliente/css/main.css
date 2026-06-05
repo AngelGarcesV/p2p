@@ -201,6 +201,30 @@
     -fx-font-size: 13px;
 }
 
+.success-label {
+    -fx-text-fill: #16a34a;
+    -fx-font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════
+   GENRE CLASSIFIER
+═══════════════════════════════════════════ */
+.genre-result-label {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e3a5f;
+}
+
+.genre-prob-bar {
+    -fx-accent: #93c5fd;
+    -fx-pref-height: 16px;
+    -fx-background-radius: 6;
+}
+
+.genre-prob-bar-high {
+    -fx-accent: #2563eb;
+}
+
 /* ═══════════════════════════════════════════
    BUTTONS (generic)
 ═══════════════════════════════════════════ */

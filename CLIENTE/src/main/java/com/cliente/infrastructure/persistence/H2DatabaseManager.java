@@ -8,7 +8,9 @@ public final class H2DatabaseManager {
 
     private static final Logger LOG = Logger.getLogger(H2DatabaseManager.class.getName());
 
-    private static final String URL = "jdbc:h2:./cliente-data/clientes;DB_CLOSE_DELAY=-1";
+    // DB en memoria: cada proceso JVM tiene su propio espacio aislado,
+    // por lo que múltiples clientes en la misma máquina no comparten datos.
+    private static final String URL = "jdbc:h2:mem:clientes;DB_CLOSE_DELAY=-1";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
 
@@ -76,9 +78,7 @@ public final class H2DatabaseManager {
         synchronized (LOCK) {
             try {
                 if (sharedConnection != null && !sharedConnection.isClosed()) {
-                    try (Statement stmt = sharedConnection.createStatement()) {
-                        stmt.execute("SHUTDOWN");
-                    }
+                    sharedConnection.close();
                     sharedConnection = null;
                 }
             } catch (SQLException e) {
