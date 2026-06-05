@@ -48,6 +48,7 @@ public class Main {
                 throw new IllegalStateException("No se encontro application.properties en el classpath");
             }
             properties.load(inputStream);
+            aplicarVariablesEntorno(properties);
 
             String protocolo = properties.getProperty("transfer-protocol");
             int puerto = Integer.parseInt(properties.getProperty("tcp.port"));
@@ -167,6 +168,25 @@ public class Main {
             LOGGER.log(Level.SEVERE, "Servidor interrumpido", e);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error en servidor", e);
+        }
+    }
+
+    private static void aplicarVariablesEntorno(Properties props) {
+        sobreescribir(props, "server.id",       "SERVER_ID");
+        sobreescribir(props, "server.host",     "SERVER_HOST");
+        sobreescribir(props, "server.peers",    "SERVER_PEERS");
+        sobreescribir(props, "tcp.port",        "TCP_PORT");
+        sobreescribir(props, "ml.host",         "ML_HOST");
+        sobreescribir(props, "ml.port",         "ML_PORT");
+        sobreescribir(props, "mysql.url",       "MYSQL_URL");
+        sobreescribir(props, "mysql.user",      "MYSQL_USER");
+        sobreescribir(props, "mysql.password",  "MYSQL_PASSWORD");
+    }
+
+    private static void sobreescribir(Properties props, String clave, String envVar) {
+        String valor = System.getenv(envVar);
+        if (valor != null && !valor.isBlank()) {
+            props.setProperty(clave, valor);
         }
     }
 

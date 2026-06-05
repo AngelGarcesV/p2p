@@ -75,7 +75,10 @@ public class ClasificarGeneroHandler implements Handler<PayloadClasificarGenero>
                 ? payload.getNombreArchivo() : "audio.wav";
 
         // ── 4. Construir multipart/form-data ─────────────────────────────────
-        String boundary = "----FormBoundary" + System.currentTimeMillis();
+        // Boundary sin guiones iniciales: python-multipart (starlette) puede
+        // interpretar "----X" como que ya lleva el prefijo "--" y stripear 2 chars,
+        // quedando desalineado con el cuerpo y retornando 422.
+        String boundary = "WavBoundary" + UUID.randomUUID().toString().replace("-", "");
         byte[] cuerpo;
         try {
             cuerpo = construirMultipart(boundary, nombreArchivo, wavBytes);
@@ -90,6 +93,7 @@ public class ClasificarGeneroHandler implements Handler<PayloadClasificarGenero>
 
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
+                .version(HttpClient.Version.HTTP_1_1)
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()

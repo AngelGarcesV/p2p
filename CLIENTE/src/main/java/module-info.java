@@ -20,7 +20,6 @@ module com.cliente {
     exports com.cliente.infrastructure.socket;
     exports com.cliente.infrastructure.protocol;
     exports com.cliente.infrastructure.persistence;
-    exports com.cliente.infrastructure.http;
     exports com.cliente.application.service;
     exports com.cliente.presentation.controller;
 }

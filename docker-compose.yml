@@ -1,0 +1,55 @@
+services:
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+      MYSQL_DATABASE: cliente_servidor
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD:-Admin2025}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  ml:
+    build:
+      context: ./IdentificacionGenerosMusicales
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  servidor:
+    build:
+      context: ./SERVIDOR/JavaMensajeriaServidor
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"   # TCP socket — clientes Java y peers
+      - "9090:9090"   # REST API — monitoreo
+    environment:
+      SERVER_ID:       ${SERVER_ID:-servidor-a}
+      SERVER_HOST:     ${SERVER_HOST:?SERVER_HOST es obligatorio — ponelo en .env}
+      SERVER_PEERS:    ${SERVER_PEERS:-}
+      SERVER_PORT:     9090
+      TCP_PORT:        8080
+      ML_HOST:         ml
+      ML_PORT:         8000
+      MYSQL_URL:       jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:      ${MYSQL_USER:-root}
+      MYSQL_PASSWORD:  ${MYSQL_PASSWORD:-Admin2025}
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
+
+volumes:
+  db_data:

@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "Cliente-Servidor — Mensajería",
+    "description": "Colección completa para el sistema de mensajería.\n\n**Servidores:**\n- Spring REST: http://localhost:9090\n- Python FastAPI (ML): http://localhost:8000\n- TCP Socket: localhost:8080 (no HTTP — usar cliente Java o netcat)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "rest_base", "value": "http://localhost:9090", "type": "string" },
+    { "key": "ml_base",   "value": "http://localhost:8000", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Spring REST — Clientes",
+      "item": [
+        {
+          "name": "Listar clientes conectados",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/clientes",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "clientes"]
+            },
+            "description": "Devuelve la lista de sesiones activas en este momento.\n\nRespuesta ejemplo:\n```json\n[\n  {\n    \"username\": \"angel\",\n    \"ipRemitente\": \"127.0.0.1\",\n    \"puertoRemitente\": 54321,\n    \"protocolo\": \"TCP\",\n    \"creadoEn\": \"2026-06-04T21:00:00\",\n    \"ultimoAcceso\": \"2026-06-04T21:05:00\"\n  }\n]\n```"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Spring REST — Archivos",
+      "item": [
+        {
+          "name": "Listar archivos recibidos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/archivos",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "archivos"]
+            },
+            "description": "Devuelve todos los archivos que el servidor ha recibido de clientes.\n\nRespuesta ejemplo:\n```json\n[\n  {\n    \"id\": 1,\n    \"remitente\": \"angel\",\n    \"ipRemitente\": \"127.0.0.1\",\n    \"nombreArchivo\": \"cancion.wav\",\n    \"extension\": \"wav\",\n    \"rutaArchivo\": \"/uploads/cancion.wav\",\n    \"hashSha256\": \"abc123...\",\n    \"tamano\": 2048000,\n    \"fechaRecepcion\": \"2026-06-04T21:10:00\",\n    \"servidorOrigen\": \"servidor-a\",\n    \"destinatario\": null\n  }\n]\n```"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Spring REST — Logs",
+      "item": [
+        {
+          "name": "Listar logs (página 1)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/logs?pagina=0&tamanoPagina=50",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "logs"],
+              "query": [
+                { "key": "pagina",      "value": "0"  },
+                { "key": "tamanoPagina","value": "50" }
+              ]
+            },
+            "description": "Devuelve logs del servidor con paginación.\n\n**Params:**\n- `pagina` — índice base 0 (default: 0)\n- `tamanoPagina` — registros por página (default: 50)\n\nRespuesta ejemplo:\n```json\n{\n  \"datos\": [\n    {\n      \"id\": 1,\n      \"nivel\": \"INFO\",\n      \"mensaje\": \"Cliente conectado: angel\",\n      \"origen\": \"com.arquitectura.aplicacion.sesion.GestorSesiones\",\n      \"ipRemitente\": \"127.0.0.1\",\n      \"fechaEvento\": \"2026-06-04T21:00:00\"\n    }\n  ],\n  \"total\": 120,\n  \"pagina\": 0,\n  \"tamanoPagina\": 50\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs (página 2)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/logs?pagina=1&tamanoPagina=50",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "logs"],
+              "query": [
+                { "key": "pagina",      "value": "1"  },
+                { "key": "tamanoPagina","value": "50" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs (tamaño personalizado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/logs?pagina=0&tamanoPagina=10",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "logs"],
+              "query": [
+                { "key": "pagina",      "value": "0"  },
+                { "key": "tamanoPagina","value": "10" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Python FastAPI — ML Géneros",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{ml_base}}/health",
+              "host": ["{{ml_base}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica si el modelo está cargado y listo.\n\nRespuesta OK:\n```json\n{ \"status\": \"ok\", \"model_loaded\": true }\n```\nRespuesta con error:\n```json\n{ \"status\": \"error\", \"model_loaded\": false }\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{ml_base}}/",
+              "host": ["{{ml_base}}"],
+              "path": [""]
+            },
+            "description": "Endpoint raíz — confirma que la API está activa."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar géneros disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{ml_base}}/genres",
+              "host": ["{{ml_base}}"],
+              "path": ["genres"]
+            },
+            "description": "Devuelve los géneros que el modelo puede predecir.\n\nRespuesta ejemplo:\n```json\n{\n  \"genres\": [\"blues\", \"classical\", \"country\", \"disco\", \"hiphop\",\n              \"jazz\", \"metal\", \"pop\", \"reggae\", \"rock\"]\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Predecir género (subir WAV)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{ml_base}}/predict",
+              "host": ["{{ml_base}}"],
+              "path": ["predict"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Archivo WAV a clasificar (obligatorio)"
+                }
+              ]
+            },
+            "description": "Recibe un archivo WAV y retorna el género predicho.\n\n**Body:** `multipart/form-data` con campo `file` (WAV)\n\nRespuesta ejemplo:\n```json\n{\n  \"predicted_genre\": \"rock\",\n  \"confidence\": 0.91,\n  \"probabilities\": {\n    \"blues\": 0.01,\n    \"classical\": 0.00,\n    \"rock\": 0.91\n  }\n}\n```\n\n**Errores comunes:**\n- `400` — el archivo no es WAV o está vacío\n- `503` — modelo no cargado todavía"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

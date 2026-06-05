@@ -16,8 +16,8 @@ public class LogsController {
 
     @GetMapping
     public Map<String, Object> listar(
-            @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "50") int tamanoPagina) {
+            @RequestParam(name = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(name = "tamanoPagina", defaultValue = "50") int tamanoPagina) {
 
         var repo = new JpaLogServidorRepository();
 
