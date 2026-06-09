@@ -1,0 +1,72 @@
+# Despliegue para UNA máquina servidor.
+# Levanta la base de datos, el servicio ML y el servidor Java.
+#
+# Uso:
+#   1. Copiar env.servidor.example → .env y completar los valores
+#   2. docker compose -f docker-compose.servidor.yml up -d --build
+
+services:
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+      MYSQL_DATABASE: cliente_servidor
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - servidor-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD:-Admin2025}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  ml:
+    build:
+      context: ./IdentificacionGenerosMusicales
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - servidor-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  servidor:
+    build:
+      context: ./SERVIDOR/JavaMensajeriaServidor
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"   # TCP P2P — otros servidores se conectan aquí
+      - "9090:9090"   # REST HTTP — el gateway hace discovery y proxy aquí
+    environment:
+      SERVER_ID:      ${SERVER_ID}
+      SERVER_HOST:    ${SERVER_HOST}
+      SERVER_PEERS:   ${SERVER_PEERS:-}
+      TCP_PORT:       8080
+      ML_HOST:        ml
+      ML_PORT:        8000
+      MYSQL_URL:      jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:     ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+    networks:
+      - servidor-net
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
+
+networks:
+  servidor-net:
+    driver: bridge
+
+volumes:
+  db_data:

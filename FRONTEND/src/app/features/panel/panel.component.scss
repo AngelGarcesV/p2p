@@ -1,0 +1,23 @@
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-card-status {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px 24px;
+}
+
+.quick-cards {
+  display: flex;
+  gap: 16px;
+}

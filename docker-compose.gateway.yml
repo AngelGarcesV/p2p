@@ -1,0 +1,37 @@
+# Despliegue para la máquina gateway + frontend.
+# Levanta el API Gateway (.NET/Ocelot) y el frontend Angular (nginx).
+#
+# Uso:
+#   1. Copiar env.gateway.example → .env y completar GATEWAY_SEEDS con las IPs reales
+#   2. docker compose -f docker-compose.gateway.yml up -d --build
+
+services:
+
+  gateway:
+    build:
+      context: ./GATEWAY
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      GATEWAY_SEEDS:          ${GATEWAY_SEEDS}
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - gateway-net
+
+  web:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway
+    networks:
+      - gateway-net
+
+networks:
+  gateway-net:
+    driver: bridge

@@ -1,0 +1,45 @@
+<div class="view-root">
+  <app-page-header
+    titulo="Gestión de Clientes"
+    subtitulo="Clientes actualmente conectados al servidor.">
+    <button mat-stroked-button (click)="cargar()" [disabled]="!serverService.seleccionado$() || loading()">
+      <mat-icon>refresh</mat-icon> Actualizar
+    </button>
+  </app-page-header>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+  @if (error()) { <div class="error-banner">{{ error() }}</div> }
+
+  @if (datos().length > 0) {
+    <table mat-table [dataSource]="datos()" class="mat-elevation-z1">
+      <ng-container matColumnDef="username">
+        <th mat-header-cell *matHeaderCellDef>Usuario</th>
+        <td mat-cell *matCellDef="let r">{{ r.username }}</td>
+      </ng-container>
+      <ng-container matColumnDef="ip">
+        <th mat-header-cell *matHeaderCellDef>IP</th>
+        <td mat-cell *matCellDef="let r">{{ r.ip }}</td>
+      </ng-container>
+      <ng-container matColumnDef="puerto">
+        <th mat-header-cell *matHeaderCellDef>Puerto</th>
+        <td mat-cell *matCellDef="let r">{{ r.puerto }}</td>
+      </ng-container>
+      <ng-container matColumnDef="protocolo">
+        <th mat-header-cell *matHeaderCellDef>Protocolo</th>
+        <td mat-cell *matCellDef="let r">{{ r.protocolo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="creadoEn">
+        <th mat-header-cell *matHeaderCellDef>Conectado en</th>
+        <td mat-cell *matCellDef="let r">{{ r.creadoEn | date:'dd/MM/yy HH:mm' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="ultimoAcceso">
+        <th mat-header-cell *matHeaderCellDef>Último acceso</th>
+        <td mat-cell *matCellDef="let r">{{ r.ultimoAcceso | date:'dd/MM/yy HH:mm' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas;"></tr>
+    </table>
+  } @else if (!loading()) {
+    <app-empty-state mensaje="Sin clientes conectados" icono="people_outline" />
+  }
+</div>

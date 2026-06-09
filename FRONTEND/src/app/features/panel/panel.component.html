@@ -1,0 +1,35 @@
+<div class="view-root">
+  <app-page-header
+    titulo="Panel"
+    subtitulo="Resumen del estado de conexión y actividad del sistema." />
+
+  <div class="info-card">
+    @if (serverService.seleccionado$(); as srv) {
+      <div class="status-row">
+        <app-status-dot [estado]="srv.estado" />
+        <span class="info-card-status">{{ srv.estado }}</span>
+      </div>
+      <div class="info-grid">
+        <span class="info-key">ID de Servidor</span>
+        <span class="info-value">{{ srv.servidorId }}</span>
+        <span class="info-key">Host</span>
+        <span class="info-value">{{ srv.host }}</span>
+        <span class="info-key">Puerto REST</span>
+        <span class="info-value">{{ srv.puerto }}</span>
+        <span class="info-key">Última conexión</span>
+        <span class="info-value">{{ srv.ultimaConexion ?? '—' }}</span>
+      </div>
+    } @else {
+      <p class="info-key">Seleccioná un servidor en el panel lateral.</p>
+    }
+  </div>
+
+  <div class="quick-cards">
+    @for (card of quickCards; track card.path) {
+      <a class="quick-card" [routerLink]="card.path">
+        <span class="quick-card-title">{{ card.title }}</span>
+        <span class="quick-card-body">{{ card.body }}</span>
+      </a>
+    }
+  </div>
+</div>

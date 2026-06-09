@@ -1,0 +1,34 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⊞</span>
+    <span class="logo-text">Monitor</span>
+  </div>
+
+  <div class="server-selector">
+    <mat-form-field appearance="outline" class="selector-field">
+      <mat-label>Servidor</mat-label>
+      <mat-select
+        [value]="serverService.seleccionado$()"
+        [compareWith]="comparar"
+        (selectionChange)="seleccionar($event.value)">
+        @for (srv of serverService.servidores$(); track srv.servidorId) {
+          <mat-option [value]="srv">{{ srv.servidorId }}</mat-option>
+        }
+        @if (serverService.servidores$().length === 0) {
+          <mat-option disabled>Sin servidores</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.path) {
+      <a class="nav-item"
+         [routerLink]="item.path"
+         routerLinkActive="active">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</aside>

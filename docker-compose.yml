@@ -7,6 +7,8 @@ services:
       MYSQL_DATABASE: cliente_servidor
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - mensajeria-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD:-Admin2025}"]
       interval: 10s
@@ -18,8 +20,8 @@ services:
     build:
       context: ./IdentificacionGenerosMusicales
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    networks:
+      - mensajeria-net
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
       interval: 30s
@@ -27,29 +29,141 @@ services:
       retries: 3
       start_period: 45s
 
-  servidor:
+  servidor1:
     build:
       context: ./SERVIDOR/JavaMensajeriaServidor
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"   # TCP socket — clientes Java y peers
-      - "9090:9090"   # REST API — monitoreo
+    expose:
+      - "8080"
+      - "9090"
     environment:
-      SERVER_ID:       ${SERVER_ID:-servidor-a}
-      SERVER_HOST:     ${SERVER_HOST:?SERVER_HOST es obligatorio — ponelo en .env}
-      SERVER_PEERS:    ${SERVER_PEERS:-}
-      SERVER_PORT:     9090
-      TCP_PORT:        8080
-      ML_HOST:         ml
-      ML_PORT:         8000
-      MYSQL_URL:       jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
-      MYSQL_USER:      ${MYSQL_USER:-root}
-      MYSQL_PASSWORD:  ${MYSQL_PASSWORD:-Admin2025}
+      SERVER_ID:      servidor1
+      SERVER_HOST:    servidor1
+      SERVER_PEERS:   servidor2:8080,servidor3:8080,servidor4:8080
+      SERVER_PORT:    9090
+      TCP_PORT:       8080
+      ML_HOST:        ml
+      ML_PORT:        8000
+      MYSQL_URL:      jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:     ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+    networks:
+      - mensajeria-net
     depends_on:
       db:
         condition: service_healthy
       ml:
         condition: service_healthy
+
+  servidor2:
+    build:
+      context: ./SERVIDOR/JavaMensajeriaServidor
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+      - "9090"
+    environment:
+      SERVER_ID:      servidor2
+      SERVER_HOST:    servidor2
+      SERVER_PEERS:   servidor1:8080,servidor3:8080,servidor4:8080
+      SERVER_PORT:    9090
+      TCP_PORT:       8080
+      ML_HOST:        ml
+      ML_PORT:        8000
+      MYSQL_URL:      jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:     ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+    networks:
+      - mensajeria-net
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
+
+  servidor3:
+    build:
+      context: ./SERVIDOR/JavaMensajeriaServidor
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+      - "9090"
+    environment:
+      SERVER_ID:      servidor3
+      SERVER_HOST:    servidor3
+      SERVER_PEERS:   servidor1:8080,servidor2:8080,servidor4:8080
+      SERVER_PORT:    9090
+      TCP_PORT:       8080
+      ML_HOST:        ml
+      ML_PORT:        8000
+      MYSQL_URL:      jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:     ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+    networks:
+      - mensajeria-net
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
+
+  servidor4:
+    build:
+      context: ./SERVIDOR/JavaMensajeriaServidor
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+      - "9090"
+    environment:
+      SERVER_ID:      servidor4
+      SERVER_HOST:    servidor4
+      SERVER_PEERS:   servidor1:8080,servidor2:8080,servidor3:8080
+      SERVER_PORT:    9090
+      TCP_PORT:       8080
+      ML_HOST:        ml
+      ML_PORT:        8000
+      MYSQL_URL:      jdbc:mysql://db:3306/cliente_servidor?createDatabaseIfNotExist=true&serverTimezone=UTC
+      MYSQL_USER:     ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
+    networks:
+      - mensajeria-net
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ./GATEWAY
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      GATEWAY_SEEDS:          "servidor1:9090,servidor2:9090,servidor3:9090,servidor4:9090"
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - mensajeria-net
+    depends_on:
+      - servidor1
+      - servidor2
+      - servidor3
+      - servidor4
+
+  web:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - mensajeria-net
+    depends_on:
+      - gateway
+
+networks:
+  mensajeria-net:
+    driver: bridge
 
 volumes:
   db_data:
