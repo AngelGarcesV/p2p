@@ -1,0 +1,52 @@
+<div class="view-root">
+  <app-page-header
+    titulo="Clasificador de Géneros Musicales"
+    subtitulo="Estado y géneros soportados por el modelo de IA del servidor seleccionado.">
+    <button mat-stroked-button (click)="cargar()" [disabled]="!serverService.seleccionado$() || loading()">
+      <mat-icon>refresh</mat-icon> Actualizar
+    </button>
+  </app-page-header>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+  @if (error()) { <div class="error-banner">{{ error() }}</div> }
+
+  <div class="ml-layout">
+
+    <mat-card class="health-card">
+      <mat-card-header>
+        <mat-card-title>Estado del modelo</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (health(); as h) {
+          <div class="health-row">
+            <span class="health-dot" [class.ok]="h.status === 'ok'" [class.error]="h.status !== 'ok'"></span>
+            <span class="health-label">{{ h.status === 'ok' ? 'Operativo' : 'No disponible' }}</span>
+          </div>
+          <div class="health-detail">
+            Modelo cargado: <strong>{{ h.modelLoaded ? 'Sí' : 'No' }}</strong>
+          </div>
+        } @else if (!loading()) {
+          <p class="sin-datos">Sin datos de salud</p>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="generos-card">
+      <mat-card-header>
+        <mat-card-title>Géneros soportados</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (generos().length > 0) {
+          <div class="generos-grid">
+            @for (g of generos(); track g) {
+              <span class="genero-chip">{{ g }}</span>
+            }
+          </div>
+        } @else if (!loading()) {
+          <p class="sin-datos">Sin géneros disponibles</p>
+        }
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

@@ -30,6 +30,10 @@ export const routes: Routes = [
       {
         path: 'servidores',
         loadComponent: () => import('./features/servidores/servidores.component').then(m => m.ServidoresComponent)
+      },
+      {
+        path: 'ml',
+        loadComponent: () => import('./features/ml/ml.component').then(m => m.MlComponent)
       }
     ]
   },

@@ -1,5 +1,6 @@
 package com.arquitectura.rest.service;
 
+import com.arquitectura.aplicacion.ml.MlProxyConfig;
 import com.arquitectura.aplicacion.sesion.GestorServidoresPeer;
 import com.arquitectura.aplicacion.sesion.GestorSesiones;
 import com.arquitectura.dominio.repositorios.JpaArchivoRecibidoRepository;
@@ -39,5 +40,9 @@ public final class RestServiceFactory {
                 GestorServidoresPeer.getInstance(),
                 new ServidorRestMapper()
         );
+    }
+
+    public static MlRestService crearMlRestService() {
+        return new MlRestService(MlProxyConfig.getInstance().getBaseUrl());
     }
 }

@@ -29,6 +29,7 @@ export class SidebarComponent implements OnInit {
     { path: 'archivos',   icon: 'folder',     label: 'Archivos' },
     { path: 'logs',       icon: 'list_alt',   label: 'Logs' },
     { path: 'servidores', icon: 'dns',        label: 'Servidores' },
+    { path: 'ml',         icon: 'music_note', label: 'Clasificador ML' },
   ];
 
   ngOnInit(): void {

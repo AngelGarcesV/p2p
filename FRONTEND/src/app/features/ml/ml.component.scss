@@ -1,0 +1,70 @@
+.ml-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  align-items: start;
+}
+
+.health-card, .generos-card {
+  border-radius: 12px;
+}
+
+.health-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.health-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+
+  &.ok    { background: #4caf50; }
+  &.error { background: #f44336; }
+}
+
+.health-label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.health-detail {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.generos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.genero-chip {
+  background: var(--mat-sys-secondary-container, #e8def8);
+  color: var(--mat-sys-on-secondary-container, #1d192b);
+  border-radius: 16px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.sin-datos {
+  color: #888;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.error-banner {
+  background: #fdecea;
+  color: #b00020;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin: 0 1.5rem 1rem;
+  font-size: 14px;
+}
