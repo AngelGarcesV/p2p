@@ -40,8 +40,8 @@ services:
 
   servidor:
     build:
-      context: ./SERVIDOR/JavaMensajeriaServidor
-      dockerfile: Dockerfile
+      context: ./SERVIDOR
+      dockerfile: JavaMensajeriaServidor/Dockerfile
     restart: unless-stopped
     ports:
       - "8080:8080"   # TCP P2P — otros servidores se conectan aquí
@@ -50,6 +50,7 @@ services:
       SERVER_ID:      ${SERVER_ID}
       SERVER_HOST:    ${SERVER_HOST}
       SERVER_PEERS:   ${SERVER_PEERS:-}
+      SERVER_PORT:    9090
       TCP_PORT:       8080
       ML_HOST:        ml
       ML_PORT:        8000

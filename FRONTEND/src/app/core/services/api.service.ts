@@ -9,7 +9,7 @@ export class ApiService {
   private readonly base = environment.gatewayUrl;
 
   get<T>(servidorId: string, path: string, params?: Record<string, string>): Observable<T> {
-    const url = `${this.base}/${servidorId}/api/${path}`;
+    const url = `${this.base}/gateway/${servidorId}/api/${path}`;
     const httpParams = params
       ? new HttpParams({ fromObject: params })
       : undefined;

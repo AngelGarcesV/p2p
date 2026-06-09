@@ -31,8 +31,8 @@ services:
 
   servidor1:
     build:
-      context: ./SERVIDOR/JavaMensajeriaServidor
-      dockerfile: Dockerfile
+      context: ./SERVIDOR
+      dockerfile: JavaMensajeriaServidor/Dockerfile
     expose:
       - "8080"
       - "9090"
@@ -49,6 +49,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
     networks:
       - mensajeria-net
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
@@ -57,8 +58,8 @@ services:
 
   servidor2:
     build:
-      context: ./SERVIDOR/JavaMensajeriaServidor
-      dockerfile: Dockerfile
+      context: ./SERVIDOR
+      dockerfile: JavaMensajeriaServidor/Dockerfile
     expose:
       - "8080"
       - "9090"
@@ -75,6 +76,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
     networks:
       - mensajeria-net
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
@@ -83,8 +85,8 @@ services:
 
   servidor3:
     build:
-      context: ./SERVIDOR/JavaMensajeriaServidor
-      dockerfile: Dockerfile
+      context: ./SERVIDOR
+      dockerfile: JavaMensajeriaServidor/Dockerfile
     expose:
       - "8080"
       - "9090"
@@ -101,6 +103,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
     networks:
       - mensajeria-net
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
@@ -109,8 +112,8 @@ services:
 
   servidor4:
     build:
-      context: ./SERVIDOR/JavaMensajeriaServidor
-      dockerfile: Dockerfile
+      context: ./SERVIDOR
+      dockerfile: JavaMensajeriaServidor/Dockerfile
     expose:
       - "8080"
       - "9090"
@@ -127,6 +130,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin2025}
     networks:
       - mensajeria-net
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy

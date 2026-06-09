@@ -1,34 +1,5 @@
 {
-  "Routes": [
-    {
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "servidor1", "Port": 9090 }],
-      "UpstreamPathTemplate": "/servidor1/api/{everything}",
-      "UpstreamHttpMethod": [ "Get" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "servidor2", "Port": 9090 }],
-      "UpstreamPathTemplate": "/servidor2/api/{everything}",
-      "UpstreamHttpMethod": [ "Get" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "servidor3", "Port": 9090 }],
-      "UpstreamPathTemplate": "/servidor3/api/{everything}",
-      "UpstreamHttpMethod": [ "Get" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "servidor4", "Port": 9090 }],
-      "UpstreamPathTemplate": "/servidor4/api/{everything}",
-      "UpstreamHttpMethod": [ "Get" ]
-    }
-  ],
+  "Routes": [],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5000"
   }
