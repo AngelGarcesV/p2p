@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -24,7 +24,7 @@ import { EmptyStateComponent } from '../../shared/empty-state/empty-state.compon
   templateUrl: './mensajes.component.html',
   styleUrl: './mensajes.component.scss'
 })
-export class MensajesComponent {
+export class MensajesComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly serverService = inject(ServerService);
 
@@ -34,6 +34,8 @@ export class MensajesComponent {
   filtroUsername = '';
 
   readonly columnas = ['autor', 'destinatario', 'contenido', 'servidorOrigen', 'fechaEnvio', 'hashSha256'];
+
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     const srv = this.serverService.seleccionado$();

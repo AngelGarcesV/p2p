@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,7 +21,7 @@ import { EmptyStateComponent } from '../../shared/empty-state/empty-state.compon
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.scss'
 })
-export class LogsComponent {
+export class LogsComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly serverService = inject(ServerService);
 
@@ -34,6 +34,8 @@ export class LogsComponent {
   tamanoPagina = 50;
 
   readonly columnas = ['nivel', 'mensaje', 'origen', 'ipRemitente', 'fechaEvento'];
+
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     const srv = this.serverService.seleccionado$();

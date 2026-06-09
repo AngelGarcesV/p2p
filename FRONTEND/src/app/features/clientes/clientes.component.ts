@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,7 +20,7 @@ import { EmptyStateComponent } from '../../shared/empty-state/empty-state.compon
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
 })
-export class ClientesComponent {
+export class ClientesComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly serverService = inject(ServerService);
 
@@ -29,6 +29,8 @@ export class ClientesComponent {
   readonly datos = signal<Cliente[]>([]);
 
   readonly columnas = ['username', 'ip', 'puerto', 'protocolo', 'creadoEn', 'ultimoAcceso'];
+
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     const srv = this.serverService.seleccionado$();
