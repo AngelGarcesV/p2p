@@ -1,0 +1,16 @@
+.git
+.agents
+.codex
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+dataset
+outputs
+docs
+*.log

@@ -1,0 +1,33 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Cache de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Dataset (datos de entrenamiento, no necesarios para servir)
+dataset/*
+!dataset/.gitkeep
+
+# Archivos temporales
+*.tmp
+*.log
+
+# Salidas del entrenamiento (checkpoints intermedios, métricas, gráficas)
+outputs/checkpoints/*
+!outputs/checkpoints/.gitkeep
+outputs/metrics/*
+!outputs/metrics/.gitkeep
+outputs/plots/*
+!outputs/plots/.gitkeep
+
+# Scripts de entrenamiento (no necesarios para servir la API)
+# Solo se conserva preprocessing.py porque el backend lo importa directamente
+training/*
+!training/preprocessing.py
+
+# Frontend (interfaz gráfica independiente del servicio)
+frontend/
+
