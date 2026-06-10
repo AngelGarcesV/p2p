@@ -32,6 +32,22 @@ class KerasGenrePredictionService:
     def predict(self, wav_bytes: bytes) -> PredictionResult:
         bundle = self._get_loaded_bundle()
 
+        # Deteccion de audios en blanco / silenciosos
+        try:
+            if self._feature_extractor.is_silent(wav_bytes):
+                probabilities_by_genre = {
+                    genre: 0.0
+                    for genre in bundle.label_encoder.classes_
+                }
+                probabilities_by_genre["no_music"] = 1.0
+                return PredictionResult(
+                    predicted_genre="no_music",
+                    confidence=1.0,
+                    probabilities=probabilities_by_genre,
+                )
+        except Exception as error:
+            raise PredictionError(f"Error al verificar silencio en el audio: {error}") from error
+
         try:
             segments = self._feature_extractor.extract(
                 wav_bytes,

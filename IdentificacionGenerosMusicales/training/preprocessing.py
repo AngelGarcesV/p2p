@@ -12,26 +12,106 @@ import librosa
 import numpy as np
 
 
+# ---------------------------------------------------------------------------
+# Caché de espectrogramas
+# ---------------------------------------------------------------------------
+
+def get_feature_cache_dir(
+    cache_root: "str | Path",
+    feature_type: str = "mel",
+    sample_rate: int = 22050,
+    segment_duration: float = 4.0,
+    overlap: float = 0.5,
+) -> Path:
+    """
+    Devuelve la subcarpeta de caché para los parámetros dados.
+
+    El nombre de la carpeta codifica TODOS los parámetros relevantes.
+    Si cualquiera cambia, se usa una carpeta distinta y el caché se regenera
+    automáticamente sin necesidad de borrar nada a mano.
+
+    Ejemplo de ruta:  cache/mel_sr22050_dur4.0s_ov0.5/
+    """
+    cache_key = f"{feature_type}_sr{sample_rate}_dur{segment_duration}s_ov{overlap}"
+    return Path(cache_root) / cache_key
+
+
+def get_segment_cache_path(audio_file_path: "str | Path", cache_dir: Path) -> Path:
+    """
+    Ruta del archivo .npy de caché para un audio concreto.
+
+    Preserva la jerarquía género/nombre para facilitar la inspección manual:
+        cache/<key>/blues/blues.00000.npy
+    """
+    p = Path(audio_file_path)
+    genre = p.parent.name   # subcarpeta del género
+    stem = p.stem           # nombre sin extensión
+    return cache_dir / genre / f"{stem}.npy"
+
+
+def load_or_compute_segments(
+    audio_file: "str | Path",
+    cache_dir: Path,
+    sample_rate: int = 22050,
+    segment_duration: float = 4.0,
+    overlap: float = 0.5,
+    feature_type: str = "mel",
+) -> "tuple[np.ndarray, list]":
+    """
+    Intenta cargar los segmentos de espectrograma desde el caché.
+    Si no existen, los calcula desde el WAV y los guarda para futuras ejecuciones.
+
+    Siempre devuelve también los segmentos de audio crudos (float32) porque
+    el pipeline de augmentation los necesita para aplicar transformaciones
+    antes de calcular los features aumentados.
+
+    Returns:
+        base_features : ndarray, shape (n_segs, height, time_steps, 1)
+        audio_segments: list de arrays de audio crudo (uno por segmento)
+    """
+    cache_path = get_segment_cache_path(audio_file, cache_dir)
+
+    # Siempre necesitamos el audio crudo para la augmentación
+    audio, sr = load_audio(audio_file, sample_rate=sample_rate)
+    audio_segments = split_audio_into_segments(audio, sr, segment_duration, overlap)
+
+    if cache_path.exists():
+        base_features = np.load(str(cache_path))
+        return base_features, audio_segments
+
+    # Calcular y guardar en caché
+    base_features = np.array(
+        [audio_to_features(seg, sr, feature_type, segment_duration) for seg in audio_segments],
+        dtype=np.float32,
+    )
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    np.save(str(cache_path), base_features)
+
+    return base_features, audio_segments
+
+
 # Semilla fija para que los experimentos sean mas reproducibles.
 RANDOM_SEED = 42
 
-# GTZAN normalmente viene con audios de 30 segundos.
-SAMPLE_RATE = 22050
-MAX_AUDIO_DURATION_SECONDS = 30
+try:
+    import training.config as config
+except ImportError:
+    import config
 
-# En lugar de usar una cancion completa como una sola muestra, dividimos el
-# audio en segmentos pequenos. Esto aumenta la cantidad de ejemplos y ayuda a
-# capturar patrones locales como ritmos, timbres e instrumentos.
-SEGMENT_DURATION_SECONDS = 4.0
-SEGMENT_OVERLAP = 0.5
+# Cargar parámetros de configuración de CNN10
+SAMPLE_RATE = config.SAMPLE_RATE
+MAX_AUDIO_DURATION_SECONDS = config.MAX_AUDIO_DURATION_SECONDS
+SEGMENT_DURATION_SECONDS = config.SEGMENT_DURATION_SECONDS
+SEGMENT_OVERLAP = config.SEGMENT_OVERLAP
 
-N_MELS = 128
-N_MFCC = 20
-N_FFT = 2048
-HOP_LENGTH = 512
+N_MELS = config.N_MELS
+N_FFT = config.N_FFT
+HOP_LENGTH = config.HOP_LENGTH
+FMIN = config.FMIN
+FMAX = config.FMAX
 
-# Feature por defecto. Opciones: "mel", "mfcc", "mfcc_delta".
-FEATURE_TYPE = "mel"
+# Feature por defecto.
+FEATURE_TYPE = config.FEATURE_TYPE
 
 # Generos oficiales del dataset GTZAN.
 GENRES = [
@@ -58,11 +138,7 @@ def get_feature_height(feature_type=FEATURE_TYPE):
     """Devuelve cuantas filas tendra la matriz de features."""
     if feature_type == "mel":
         return N_MELS
-    if feature_type == "mfcc":
-        return N_MFCC
-    if feature_type == "mfcc_delta":
-        return N_MFCC * 3
-    raise ValueError("feature_type debe ser 'mel', 'mfcc' o 'mfcc_delta'.")
+    raise ValueError("feature_type debe ser 'mel'.")
 
 
 def get_input_shape(feature_type=FEATURE_TYPE, segment_duration=SEGMENT_DURATION_SECONDS):
@@ -140,11 +216,7 @@ def audio_to_features(
     segment_duration=SEGMENT_DURATION_SECONDS,
 ):
     """
-    Convierte un segmento de audio en Mel Spectrogram o MFCCs.
-
-    MFCC + delta + delta-delta agrega informacion sobre como cambian las
-    caracteristicas en el tiempo. Es util en audio y sigue siendo facil de
-    explicar en una sustentacion.
+    Convierte un segmento de audio en Mel Spectrogram.
     """
     target_time_steps = get_expected_time_steps(segment_duration, sample_rate)
 
@@ -155,27 +227,13 @@ def audio_to_features(
             n_mels=N_MELS,
             n_fft=N_FFT,
             hop_length=HOP_LENGTH,
+            fmin=FMIN,
+            fmax=FMAX,
         )
         features = librosa.power_to_db(features, ref=np.max)
 
-    elif feature_type in ["mfcc", "mfcc_delta"]:
-        mfcc = librosa.feature.mfcc(
-            y=audio,
-            sr=sample_rate,
-            n_mfcc=N_MFCC,
-            n_fft=N_FFT,
-            hop_length=HOP_LENGTH,
-        )
-
-        if feature_type == "mfcc":
-            features = mfcc
-        else:
-            delta = librosa.feature.delta(mfcc)
-            delta_delta = librosa.feature.delta(mfcc, order=2)
-            features = np.concatenate([mfcc, delta, delta_delta], axis=0)
-
     else:
-        raise ValueError("feature_type debe ser 'mel', 'mfcc' o 'mfcc_delta'.")
+        raise ValueError("feature_type debe ser 'mel'.")
 
     features = normalize_features(features)
     features = pad_or_truncate(features, target_time_steps)
@@ -246,6 +304,29 @@ def process_audio_file(
         ],
         dtype=np.float32,
     )
+
+
+def is_audio_silent(
+    file_path,
+    sample_rate=SAMPLE_RATE,
+    duration=MAX_AUDIO_DURATION_SECONDS,
+    threshold=0.0015,
+) -> bool:
+    """
+    Carga un archivo de audio y determina si consiste principalmente en silencio.
+    
+    Calcula el valor RMS (Root Mean Square) del audio y lo compara con un umbral.
+    """
+    try:
+        audio, sr = load_audio(file_path, sample_rate=sample_rate, duration=duration)
+        if len(audio) == 0:
+            return True
+        rms = librosa.feature.rms(y=audio, frame_length=2048, hop_length=512)
+        mean_rms = float(np.mean(rms))
+        return mean_rms < threshold
+    except Exception:
+        # Si ocurre un error al procesar el audio, lo consideramos como silencio por seguridad
+        return True
 
 
 def get_dataset_files(dataset_path):

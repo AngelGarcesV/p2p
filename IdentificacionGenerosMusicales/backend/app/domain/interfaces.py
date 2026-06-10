@@ -20,6 +20,9 @@ class AudioFeatureExtractor(Protocol):
     def extract(self, wav_bytes: bytes, config: PreprocessingConfig) -> np.ndarray:
         """Extrae segmentos procesados desde bytes WAV."""
 
+    def is_silent(self, wav_bytes: bytes) -> bool:
+        """Determina si el audio de entrada es silencioso."""
+
 
 class GenrePredictionService(Protocol):
     """Contrato de la logica de negocio de prediccion."""

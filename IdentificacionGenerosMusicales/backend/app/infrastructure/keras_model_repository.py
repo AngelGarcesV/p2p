@@ -18,7 +18,18 @@ class KerasModelRepository:
     def load(self) -> ModelBundle:
         self._ensure_artifacts_exist()
 
-        model = keras.models.load_model(self._settings.model_path, compile=False)
+        # Importar AudioPooling dinámicamente desde el módulo de entrenamiento
+        import sys
+        training_path = self._settings.project_root / "training"
+        if str(training_path) not in sys.path:
+            sys.path.append(str(training_path))
+        from panns_cnn10 import AudioPooling
+
+        model = keras.models.load_model(
+            self._settings.model_path,
+            custom_objects={"AudioPooling": AudioPooling},
+            compile=False
+        )
         with open(self._settings.label_encoder_path, "rb") as file:
             label_encoder = pickle.load(file)
 

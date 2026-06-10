@@ -23,11 +23,3 @@ outputs/metrics/*
 outputs/plots/*
 !outputs/plots/.gitkeep
 
-# Scripts de entrenamiento (no necesarios para servir la API)
-# Solo se conserva preprocessing.py porque el backend lo importa directamente
-training/*
-!training/preprocessing.py
-
-# Frontend (interfaz gráfica independiente del servicio)
-frontend/
-
