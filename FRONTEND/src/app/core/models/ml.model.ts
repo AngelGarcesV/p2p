@@ -8,5 +8,5 @@ export interface MlHealth {
 }
 
 export interface GenerosMl {
-  generos: string[];
+  genres: string[];
 }

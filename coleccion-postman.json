@@ -152,6 +152,50 @@
         }
       ]
     },    {
+      "name": "Spring REST — ML",
+      "item": [
+        {
+          "name": "Info del servicio ML",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/ml",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "ml"]
+            },
+            "description": "Devuelve información general del servicio ML vía proxy Spring Boot → FastAPI.\n\nRespuesta ejemplo:\n```json\n{ \"message\": \"API de Identificación de Géneros Musicales\" }\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Health del modelo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/ml/health",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "ml", "health"]
+            },
+            "description": "Verifica si el modelo de ML está cargado y operativo.\n\nRespuesta OK:\n```json\n{ \"status\": \"ok\", \"modelLoaded\": true }\n```\nRespuesta con error:\n```json\n{ \"status\": \"error\", \"modelLoaded\": false }\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar géneros soportados",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{rest_base}}/api/ml/generos",
+              "host": ["{{rest_base}}"],
+              "path": ["api", "ml", "generos"]
+            },
+            "description": "Devuelve los géneros musicales que el modelo puede predecir.\n\nRespuesta ejemplo:\n```json\n{\n  \"generos\": [\"blues\", \"classical\", \"country\", \"disco\", \"hiphop\",\n               \"jazz\", \"metal\", \"pop\", \"reggae\", \"rock\"]\n}\n```"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Python FastAPI — ML Géneros",
       "item": [
         {

@@ -1,9 +1,10 @@
-FROM python:3.10.11-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    KERAS_BACKEND=tensorflow
+    KERAS_BACKEND=tensorflow \
+    TF_ENABLE_ONEDNN_OPTS=0
 
 WORKDIR /app
 
@@ -11,11 +12,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ffmpeg \
         libsndfile1 \
+        libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/requirements.txt
 RUN python -m pip install --upgrade pip \
-    && python -m pip install -r /tmp/requirements.txt
+    && python -m pip install -v -r /tmp/requirements.txt
 
 COPY backend/ ./backend/
 COPY training/ ./training/

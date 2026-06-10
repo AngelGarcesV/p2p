@@ -44,7 +44,7 @@ export class MlComponent implements OnInit {
     });
 
     this.api.get<GenerosMl>(srv.servidorId, 'ml/generos').subscribe({
-      next: res => { this.generos.set(res.generos); this.loading.set(false); },
+      next: res => { this.generos.set(res.genres); this.loading.set(false); },
       error: err => { this.error.set(err.message); this.loading.set(false); }
     });
   }
